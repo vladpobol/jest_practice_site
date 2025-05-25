@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Классификатор цветов - Система захвата жестов</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .classifier-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .upload-form {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin: 20px 0;
+        }
+        .preview-container {
+            margin: 20px 0;
+            text-align: center;
+        }
+        .preview-image {
+            max-width: 300px;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .results {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .result-item {
+            margin: 10px 0;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+        .file-input {
+            margin: 10px 0;
+        }
+        .submit-button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .submit-button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Система захвата жестов</h1>
+            <nav>
+                <ul>
+                    <li><a href="index.html">Главная</a></li>
+                    <li><a href="about.html">О проекте</a></li>
+                    <li><a href="participants.html">Участники</a></li>
+                    <li><a href="journal.html">Журнал</a></li>
+                    <li><a href="resources.html">Ресурсы</a></li>
+                    <li><a href="flowers.html" class="active">Классификатор цветов</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <div class="classifier-container">
+            <h2>Классификатор цветов</h2>
+            <p>Загрузите фотографию цветка, и наша модель определит его вид с высокой точностью.</p>
+            
+            <div class="upload-form">
+                <form id="uploadForm" enctype="multipart/form-data">
+                    <div class="file-input">
+                        <input type="file" id="imageInput" accept="image/*" required>
+                    </div>
+                    <button type="submit" class="submit-button">Определить вид цветка</button>
+                </form>
+            </div>
+
+            <div id="imagePreview" class="preview-container"></div>
+            <div id="results" class="results"></div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 Проектная деятельность. Все права защищены.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData();
+            const fileInput = document.getElementById('imageInput');
+            formData.append('file', fileInput.files[0]);
+
+            // Show image preview
+            const preview = document.getElementById('imagePreview');
+            preview.innerHTML = `<img src="${URL.createObjectURL(fileInput.files[0])}" class="preview-image">`;
+
+            try {
+                const response = await fetch('/classify', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+                
+                // Display results
+                const resultsDiv = document.getElementById('results');
+                resultsDiv.innerHTML = '<h3>Результаты классификации:</h3>';
+                data.forEach(result => {
+                    resultsDiv.innerHTML += `
+                        <div class="result-item">
+                            <strong>${result.class}</strong>: ${(result.probability * 100).toFixed(2)}%
+                        </div>
+                    `;
+                });
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Ошибка при классификации изображения');
+            }
+        });
+    </script>
+</body>
+</html> 
